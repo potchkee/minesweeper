@@ -53,7 +53,7 @@ Next
 
 Lbl 9
 
-'Draws a full board of hidden tiles
+'Draws a full board of hidden tiles.
 ClrText
 For 1->A To 7
 Locate 1,A,Str 5
@@ -93,38 +93,38 @@ IfEnd
 Lbl 3
 Getkey->D
 A->X:B->Y
-'Shift or EXE selects the hovered tile
+'Shift or EXE selects the hovered tile.
 D=31 Or D=78=>Goto E
-'Alpha adds or removes a flag
+'Alpha adds or removes a flag.
 D=77=>Goto M
-'F4 checks if the player won the game
+'F4 checks if the player won the game.
 D=49=>Goto W
-'F5 resets the game
+'F5 resets the game.
 D=39=>Goto 1
-'F6 goes to settings
+'F6 goes to settings.
 D=29=>Goto S
-'Exit closes the game
+'Exit closes the game.
 D=47=>Goto C
-'Left key press
+'Left key press.
 D=38=>A>2=>A-1->A
-'Right key press
+'Right key press.
 D=27=>A<22=>A+1->A
-'Up key press
+'Up key press.
 D=28=>B>2=>B-1->B
-'Down key press
+'Down key press.
 D=37=>B<8=>B+1->B
 A<>X Or B<>Y=>Goto 2
 0->L:Goto 3
 
-'Selection and adding flags
+'Selection and adding flags.
 Lbl M
 1->O
 Lbl E
-'Ignores selection/flag on revealed tile
+'Ignores selection/flag on revealed tile.
 If Frac List B[A]=.1
 Then 0->O:Goto 2
 IfEnd
-'Adds selection animation while key is being pressed
+'Adds selection animation while key is being pressed.
 If O=0
 Then Magenta Locate A-1,B-1,Str 3
 While Getkey=78 Or Getkey=31:WhileEnd
