@@ -1,2 +1,2 @@
 # minesweeper
-minesweeper game for casio graphing calculator
+Minesweeper game for CASIO graphing calculators written in the CASIO built in programming language.
