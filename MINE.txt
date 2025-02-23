@@ -28,7 +28,9 @@ Lbl 1
 ClrText
 
 'Loading message. Takes 3+ seconds to load, depending on the amount of mines set.
-Locate 7,4,"_@E74C__@E76F__@E761__@E764__@E769__@E76E__@E767_..."
+Locate 7,3,"_@E74C__@E76F__@E761__@E764__@E769__@E76E__@E767_..."
+Locate 6,6,"Minesweeper"
+Locate 6,7,"By Potchkee"
 
 'Creates 9 blank lists of 23 '0's. Rows 2-22 in lists 2 through 8 represent the board, the remaining space is buffer room. 0 represents a blank square on the board.
 For 1->A To 9
