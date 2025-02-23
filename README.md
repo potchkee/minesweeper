@@ -1,5 +1,6 @@
 # minesweeper
 Minesweeper game for CASIO graphing calculators written in the CASIO built in programming language.
+I wrote it on the Casio Prizm FX-CG50.
 
 There is a formatted version with spacing in the 'formatted' folder for readability, but the actual file does not allow for spacing as that will give a syntax error when running the program on a calculator.
 
