@@ -1,97 +1,142 @@
 'ProgramMode:RUN
-'P+,NO R W
-'USED LBL 1239,AELMSWHC
-'STR 9+
-RclV-Win 1
+'Uses Variables A-O,X,Y
+'Uses Labels 1-3,9,A,C,E,H,L,M,S,W
+'Uses Strings 1-8
+'Uses Lists 1-11
+
+'Clears board.
+ClrGraph
 Text 1,1," "
+
+'M represents mines. By default, sets M to 25 if M is previously set to an unusual number.
 M<15 Or M>40=>25->M
+
+'Sets strings used later in displaying the board. String 1 is the revealed tiles, 2 is a hidden tile, 3 is a hidden tile being hovered over, 4 is a flag, 6 is an unflagged mine shown on a loss, 8 is a flagged mine shown on a win. String 1 is used to set string 7 to a revealed blank tile. String 5 is set to a long string of hidden tiles, used for faster loading.
 "_#E6A3__#E5F0__#E5F1__#E5F2__#E5F3__#E5F4__#E5F5__#E5FB__#E5FC_"->Str 1
-"_#E6A6_"->Str 2:"_#E6A6_"->Str 3
-"_#E69E_"->Str 4:"_#E6AE_"->Str 6
+"_#E6A6_"->Str 2
+"_#E6A6_"->Str 3
+"_#E69E_"->Str 4
+"_#E6AE_"->Str 6
 "_#E5AD_"->Str 8
 StrLeft(Str 1,1)->Str 7
-Str 2->Str 5:For 1->A To 5:Str 5+Str 5->Str 5:Next
+Str 2->Str 5
+For 1->A To 5
+Str 5+Str 5->Str 5
+Next
 
 Lbl 1
-
-'CREATE DATABASE
 ClrText
+
+'Loading message. Takes 3+ seconds to load, depending on the amount of mines set.
 Locate 7,4,"_@E74C__@E76F__@E761__@E764__@E769__@E76E__@E767_..."
+
+'Creates 9 blank lists of 23 '0's. Rows 2-22 in lists 2 through 8 represent the board, the remaining space is buffer room. 0 represents a blank square on the board.
 For 1->A To 9
 {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0}->List A
 Next
-'ADD MINES AND #S
+
+'Adds mines to the list. Any number equal to or higher than 9 represents a mine.
 For 1->A To M
 Do
 RanInt#(2,8)->C
 RanInt#(2,22)->D
 LpWhile List C[D]>=9
 9->List C[D]
+'Increases each number surrounding the mine by 1 before adding the next mine (this adds to the number representing the mine too, but that doesn't matter).
 For C-1->F To C+1
 For D-1->B To D+1
-List F[B]+1->List F[B]:Next:Next:Next
+List F[B]+1->List F[B]
+Next:Next
+Next
 
 Lbl 9
 
-'DRAW BOARD
+'Draws a full board of hidden tiles
 ClrText
 For 1->A To 7
 Locate 1,A,Str 5
 Next
 
-'GAMEPLAY
+'Gameplay
 
-'MOVING
-2->A:2->B:2->X:2->Y:0->Q
-.1->H:0->O:0->N
+'Adds a tile being hovered upon, with 4 directional movement.
+
+2->A:2->B:2->X:2->Y:0->Q:.1->H:0->O:0->N
 While Getkey<>0:WhileEnd
 Lbl 2
-If X<>A Or Y<>B:Then 
-10Frac List Y[X]->E
+'Removes hovering effect from original tile upon movement.
+If X<>A Or Y<>B
+Then 10Frac List Y[X]->E
 E=0=>Locate X-1,Y-1,Str 2
 E=1=>Locate X-1,Y-1,StrMid(Str 1,Int List Y[X]+1,1)
 E=2=>Red Locate X-1,Y-1,Str 4
 IfEnd
+'Checks the fraction value of hovered tile. 0 is a hidden tile, .1 is a revealed tile, .2 is a flag.
 10Frac List B[A]->E
 E=0=>Blue Locate A-1,B-1,Str 2
 E=1=>Blue Locate A-1,B-1,StrMid(Str 1,Int List B[A]+1,1)
 E=2=>Magenta Locate A-1,B-1,Str 4
 While Getkey=77:WhileEnd
+'Adds a short pause after a new movement before allowing fast movement in that direction. This ensures that a key press will not mistakenly move the player more tiles than intended. If the player continues to hold the key, the pause will disable until the player stops holding the key.
 If L=0 And D<>0 And D<>78 And D<>77 And D<>31
 Then For 1->C To 100
-1->L:Getkey->D:If D=0 Or D=78 Or D=77 Or D=31:Then 0->L:Break:IfEnd:Next:IfEnd
+1->L:Getkey->D
+If D=0 Or D=78 Or D=77 Or D=31
+Then 0->L
+Break
+IfEnd
+Next
+IfEnd
 
 Lbl 3
 Getkey->D
 A->X:B->Y
+'Shift or EXE selects the hovered tile
 D=31 Or D=78=>Goto E
+'Alpha adds or removes a flag
 D=77=>Goto M
+'F4 checks if the player won the game
 D=49=>Goto W
+'F5 resets the game
 D=39=>Goto 1
+'F6 goes to settings
 D=29=>Goto S
+'Exit closes the game
 D=47=>Goto C
+'Left key press
 D=38=>A>2=>A-1->A
+'Right key press
 D=27=>A<22=>A+1->A
+'Up key press
 D=28=>B>2=>B-1->B
+'Down key press
 D=37=>B<8=>B+1->B
 A<>X Or B<>Y=>Goto 2
 0->L:Goto 3
 
-'ENTRY
+'Selection and adding flags
 Lbl M
 1->O
 Lbl E
-If Frac List B[A]=.1:Then 0->O:Goto 2:IfEnd:If O=0:Then Magenta Locate A-1,B-1,Str 3:While Getkey=78 Or Getkey=31:WhileEnd
-Else 0->H:Frac List B[A]=0=>.2->H:0->O:IfEnd
-If Frac List B[A]<>.1
-Then Int List B[A]+H->List B[A]
+'Ignores selection/flag on revealed tile
+If Frac List B[A]=.1
+Then 0->O:Goto 2
+IfEnd
+'Adds selection animation while key is being pressed
+If O=0
+Then Magenta Locate A-1,B-1,Str 3
+While Getkey=78 Or Getkey=31:WhileEnd
+Else 0->H
+Frac List B[A]=0=>.2->H
+0->O
+IfEnd
+Int List B[A]+H->List B[A]
 List B[A]=.1=>Goto A
 H=.1 And List B[A]>=9=>Goto L
-IfEnd
 .1->H
 Goto 2
 
-'AUTO EXPAND
+'Automatically expands when a blank tile is selected. Keeps expanding upon revealing further blank tiles.
 Lbl A
 Locate A-1,B-1,Str 7
 A->F:B->G:0->E
@@ -100,8 +145,8 @@ Do
 F=2=>0->J:G=2=>0->K
 For F-J->C To F+1-Int (F/22)
 For G-K->D To G+1-Int (G/8)
-If Frac List D[C]<>.1:Then 
-Int List D[C]+.1->List D[C]
+If Frac List D[C]<>.1
+Then Int List D[C]+.1->List D[C]
 Locate C-1,D-1,StrMid(Str 1,List D[C]+.9,1)
 If List D[C]=.1
 Then Isz E
@@ -114,13 +159,12 @@ List 10[E]->F
 List 11[E]->G
 E-1->E
 LpWhile E<>.1
-
 ClrList10
 ClrList11
 .1->H
 Goto 2
 
-'CHECK WIN
+'Checks for win.
 Lbl W
 For 2->C To 8
 For 2->G To 22
@@ -131,39 +175,70 @@ For 2->A To 8
 For 2->B To 22
 If List A[B]>=9:Then Green Locate B-1,A-1,Str 8:IfEnd
 Next:Next
-While Getkey<>31 And Getkey<>78 And Getkey<>39:If Getkey=29:Then 1->N:Goto S:IfEnd:Getkey=47=>Goto C:WhileEnd
+While Getkey<>31 And Getkey<>78 And Getkey<>39
+If Getkey=29
+Then 1->N
+Goto S
+IfEnd
+Getkey=47=>Goto C
+WhileEnd
 Goto 1
 
-'LOSS
+'Loss. Reveals all mines.
 Lbl L
 Red Locate A-1,B-1,Str 6
 For 2->A To 8
 For 2->B To 22
-If List A[B]>=9:Then If Frac List A[B]=.2:Then Red Locate B-1,A-1,"_#E6A0_":Else Red Locate B-1,A-1,Str 6:IfEnd:IfEnd
+If List A[B]>=9
+Then
+'Different visuals for flagged and unflagged mines.
+If Frac List A[B]=.2
+Then Red Locate B-1,A-1,"_#E6A0_"
+Else Red Locate B-1,A-1,Str 6
+IfEnd:IfEnd
 Next:Next
-While Getkey<>31 And Getkey<>78 And Getkey<>39:If Getkey=29:Then 1->N:Goto S:IfEnd:Getkey=47=>Goto C:WhileEnd
+While Getkey<>31 And Getkey<>78 And Getkey<>39
+If Getkey=29
+Then 1->N
+Goto S
+IfEnd
+Getkey=47=>Goto C
+WhileEnd
 Goto 1
 
-'SETTINGS
+'Settings. Option to change the number of mines using up and down keys.
 Lbl S
 ClrText
 Locate 2,2,"MINES\:"
 Locate 8,2,M
-N=0=>Locate 1,7,"_@E742__@E741__@E743__@E74B_":Locate 9,7,"_@E748__@E745__@E74C__@E750_"
+'Back (F1)
+N=0=>Locate 1,7,"_@E742__@E741__@E743__@E74B_"
+'Help (F3/F4)
+Locate 9,7,"_@E748__@E745__@E74C__@E750_"
+'Save (F6)
 Locate 18,7,"_@E753__@E741__@E756__@E745_"
-M->I:While Getkey<>0:WhileEnd
-
+M->I
+While Getkey<>0:WhileEnd
 Do
-0->G:M>=10=>1->G
-M<100=>Locate 9+G,2," ":Locate 8,2,M
+0->G
+M>=10=>1->G
+M<100=>Locate 9+G,2," "
+Locate 8,2,M
+
+'Smooth handling when changing the number of mines, with a short pause after a key press, and a very slight pause on multiples of 5 and 10.
 Frac (M/5)=0=>20->G
 Frac (M/10)=0=>40->G
-
 If F=0 And D<>0
 Then For 1->C To 130
-1->F:Getkey->D:D=0=>0->F:D=0=>Break:Next:IfEnd
+1->F
+Getkey->D
+D=0=>0->F
+D=0=>Break
+Next
+IfEnd
 For 1->C To 1+G
-Getkey->D:Next
+Getkey->D
+Next
 D=0=>0->F
 D=28 And M<146=>Isz M
 D=37 And M>1=>Dsz M
@@ -172,6 +247,7 @@ LpWhile (D<>79 Or N<>0) And D<>49 And D<>59
 D=49 Or D=59=>Goto H
 I->M
 ClrText
+'Redraws board when the player hits 'back' (F1). Unfortunately there is no faster option with the CASIO language.
 For 2->G To 8
 For 2->C To 22
 10Frac List G[C]->E
@@ -181,20 +257,36 @@ E=2=>Red Locate C-1,G-1,Str 4
 Next:Next
 Goto 2
 
-'HELP
+'Help screen with controls
 Lbl H
 ClrText
+'Shift- reveal tile
 Locate 2,1,"_@E753__@E748__@E749__@E746__@E754_\: _@E752__@E745__@E756__@E745__@E741__@E74C_ _@E754__@E749__@E74C__@E745_"
-Locate 2,2,"_@E741__@E74C__@E750__@E748__@E741_\: _@E74D__@E741__@E752__@E74B_ _@E741__@E753_ _@E74D__@E749__@E74E__@E745_
+'Alpha- flag tile
+Locate 2,2,"_@E741__@E74C__@E750__@E748__@E741_\: _@E746__@E74C__@E741__@E747_ _@E754__@E749__@E74C__@E745_"
+'F4- check for win
 Locate 2,3,"_@E746__#E5D4_\: _@E743__@E748__@E745__@E743__@E74B_ _@E746__@E74F__@E752_ _@E757__@E749__@E74E_"
+'F5- reset
 Locate 2,4,"_@E746__#E5D5_\: _@E752__@E745__@E753__@E745__@E754_"
+'F6- settings
 Locate 2,5,"_@E746__#E5D6_\: _@E753__@E745__@E754__@E754__@E749__@E74E__@E747__@E753_"
+'Back
 Locate 1,7,"_@E742__@E741__@E743__@E74B_"
 While Getkey<>79:WhileEnd
 Goto S
 
-'CLEANUP
+'Clear data before closing
 Lbl C
-For 1->A To 8
-ClrListA:Next
+For 1->A To 9
+ClrListA
+Next
+""->Str 1
+""->Str 2
+""->Str 3
+""->Str 4
+""->Str 5
+""->Str 6
+""->Str 7
+""->Str 8
+ClrText
 Return
